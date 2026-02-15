@@ -1,14 +1,40 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+  ideas     BusinessIdea[]
+}
+
+model BusinessIdea {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  name        String
+  description String
+  sector      String
+  resources   Json?    // Store array of resources
+  createdAt   DateTime @default(now())
+  assessment  Assessment?
+}
+
+model Assessment {
+  id              String   @id @default(uuid())
+  businessIdeaId  String   @unique
+  businessIdea    BusinessIdea @relation(fields: [businessIdeaId], references: [id])
+  carbonScore     Float
+  socialScore     Float
+  resourceScore   Float
+  totalScore      Float
+  recommendations Json     // Array of recommendation objects
+  createdAt       DateTime @default(now())
 }
